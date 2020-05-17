@@ -8,7 +8,7 @@ import json
 import time
 import argparse
 
-args = argparse.ArgumentParser(description='Export prometheus metrics about a mastodon instance')
+args = argparse.ArgumentParser(description='Export prometheus metrics about a mastodon instance by em1o. Released under the BSD-3-Clause LICENSE, see LICENSE for the full text.')
 args.add_argument('instance', metavar='instance', type=str, help='Mastodon instance to query')
 args.add_argument('--address', '-a', type=str, help='Host to bind the webserver to. Defaults to 127.0.0.1', default='127.0.0.1')
 args.add_argument('--port', '-p', type=int, help='The port to listen and serve the metrics on. Defaults to 38171', default=38171)
