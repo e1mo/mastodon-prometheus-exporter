@@ -2,7 +2,9 @@
 
 from urllib import request
 import prometheus_client as pc
+import configparser as cp
 from datetime import datetime
+import os
 import wsgiref
 import json
 import time
@@ -10,21 +12,60 @@ import argparse
 
 args = argparse.ArgumentParser(description='Export prometheus metrics about a mastodon instance by em1o. Released under the BSD-3-Clause LICENSE, see LICENSE for the full text.')
 args.add_argument('instance', metavar='instance', type=str, help='Mastodon instance to query')
-args.add_argument('--address', '-a', type=str, help='Host to bind the webserver to. Defaults to 127.0.0.1', default='127.0.0.1')
-args.add_argument('--port', '-p', type=int, help='The port to listen and serve the metrics on. Defaults to 38171', default=38171)
-args.add_argument('--protocol', type=str, help='Protocol to use. Defaults to https', default='https', choices=['http', 'https'])
-args.add_argument('--interval', '-i', type=int, help='Time betwen calls to the API in seconds, be aware of mastodons rate limit. Defaults to 60s', default=60)
+args.add_argument('--address', '-a', type=str, help='Host to bind the webserver to. Defaults to 127.0.0.1')
+args.add_argument('--port', '-p', type=int, help='The port to listen and serve the metrics on. Defaults to 38171')
+args.add_argument('--protocol', type=str, help='Protocol to use. Defaults to https', choices=['http', 'https'])
+args.add_argument('--interval', '-i', type=int, help='Time betwen calls to the API in seconds, be aware of mastodons rate limit. Defaults to 60s')
+args.add_argument('--config', '-c', type=str, help='Absolute Path to the configuration ini. Will get overwritten bei other arguments.')
+
+defaultConf = {
+    'address': '127.0.0.1',
+    'port': '38171',
+    'interval': 60,
+    'protocol': 'https'
+}
 
 args = args.parse_args()
 
-instance = args.instance
-protocol = args.protocol
-instance_url = protocol + '://' + instance 
+localConf = defaultConf
 
-host = args.address
-port = args.port
+localConf['instance'] = args.instance
 
-interval = args.interval
+configpath = args.config
+
+localConf = defaultConf
+if configpath is not None and os.path.isfile(configpath):
+    print('[{}] Load config from {}'.format(datetime.now().strftime('%FT%H:%M%Z%z'), configpath))
+    config = cp.ConfigParser()
+    config.read(configpath)
+    if localConf['instance'] in config:
+        for key in config[localConf['instance']]:
+            localConf[key.lower()] = config[localConf['instance']][key]
+
+elif configpath is not None:
+    print('[{}] {} not found or is not accesible'.format(datetime.now().strftime('%FT%H:%M%Z%z'), configpath))
+    exit(1)
+
+if args.protocol is not None:
+    localConf['protocol'] = args.protocol
+
+if args.address is not None:
+    localConf['address'] = args.address
+
+if args.port is not None:
+    localConf['port'] = args.port
+
+if args.interval is not None:
+    localConf['interval'] = args.interval
+
+print('[{}] Running width {}'.format(datetime.now().strftime('%FT%H:%M%Z%z'), localConf))
+
+instance_url = localConf['protocol'] + '://' + localConf['instance']
+
+host = localConf['address']
+port = int(localConf['port'])
+
+interval = localConf['interval']
 
 last_query = pc.Info('mastodon_last_query', 'Unix timestamp of the last query of the api')
 version = pc.Info('mastodon_version', 'Version of the mastodon instance')

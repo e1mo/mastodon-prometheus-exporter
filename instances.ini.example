@@ -1,0 +1,6 @@
+[cuties.social]
+Port=1337
+Address=0.0.0.0
+
+[mastodon.social]
+Port=1338
