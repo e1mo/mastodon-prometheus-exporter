@@ -43,9 +43,9 @@ trends = pc.Info('mastodon_trends', 'Trends on this mastodon instance')
 
 def collectMetrics ():
     metrics = {}
-    metrics['instance'] = json.loads(request.urlopen('{}/api/v1/instance'.format(instance_url)).read())
-    metrics['custom_emojis'] = json.loads(request.urlopen('{}/api/v1/custom_emojis'.format(instance_url)).read())
-    metrics['trends'] = json.loads(request.urlopen('{}/api/v1/trends'.format(instance_url)).read())
+    metrics['instance'] = json.loads(request.urlopen('{}/api/v1/instance'.format(instance_url)).read().decode('UTF-8'))
+    metrics['custom_emojis'] = json.loads(request.urlopen('{}/api/v1/custom_emojis'.format(instance_url)).read().decode('UTF-8'))
+    metrics['trends'] = json.loads(request.urlopen('{}/api/v1/trends'.format(instance_url)).read().decode('UTF-8'))
 
     last_query.info({'timestamp': str(round(time.time()))})
     version.info({'version': metrics['instance']['version']})
